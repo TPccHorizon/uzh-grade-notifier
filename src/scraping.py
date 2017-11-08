@@ -1,9 +1,10 @@
 import requests
+import re
 from bs4 import BeautifulSoup
 
 
 def get_url_login(url_start):
-    """Follow redirect on module booking start page to get URL of AAI login page"""
+    """Follow redirect on start page to get URL of AAI login page"""
 
     # GET page
     page_start = requests.get(url_start)
@@ -12,19 +13,25 @@ def get_url_login(url_start):
 
     # extract redirect URL from meta tag
     soup_start = BeautifulSoup(page_start.content, "html.parser")
-    html_meta = soup_start.find("meta", attrs={"http-equiv": "REFRESH"})
-    if html_meta:
-        html_meta_content = html_meta["content"]
-        url_login = html_meta_content.split("url=", 1)[1]
+    scripts = soup_start.findAll("script")
+    if scripts:
+        # find server base address
+        regex_server_address = re.compile("var server = \"(.*)\";")
+        server_address = regex_server_address.search(scripts[0].string).group(1)
+
+        # find server path
+        regex_url = re.compile("location.href = \"(.*)\"\n")
+        url = regex_url.search(scripts[1].string).group(1)
+
+        # merge server base address and path
+        return url.replace("\" + server + \"", server_address)
     else:
         raise Exception("Could not find redirect URL to AAI login page")
 
-    return url_login
-
 
 def login(url_login, username, password):
-    """Enter authentication information on AAI login page and follow redirects to get HTML of module
-    booking page"""
+    """Enter authentication information on AAI login page and follow redirects to get HTML of grades
+    page"""
 
     # start session (for storing cookies)
     with requests.Session() as session:
@@ -58,7 +65,7 @@ def login(url_login, username, password):
         soup_confirm = BeautifulSoup(page_confirm.content, "html.parser")
         form_confirm = soup_confirm.find("form", attrs={"method": "post"})
         if form_confirm:
-            url_module_booking = form_confirm["action"]
+            url_grades = form_confirm["action"]
         else:
             raise Exception("Could not find POST URL of login form")
 
@@ -73,8 +80,8 @@ def login(url_login, username, password):
             'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 '
                           '(KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}
 
-        # POST to confirmation form URL to get module booking page
-        page_module_booking = session.post(url_module_booking, data=payload_confirm,
+        # POST to confirmation form URL to get grades page
+        page_grades = session.post(url_grades, data=payload_confirm,
                                            headers=headers_confirm)
-        print(page_module_booking.text)
-        return page_module_booking.content
+        print(page_grades.text)
+        return page_grades.content

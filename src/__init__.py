@@ -1,10 +1,9 @@
 import json
 import os.path
 
-import scraping
+from src import scraping
 
-
-url_start_page = "https://idagreen.uzh.ch/mb/"
+url_start_page = "https://idagreen.uzh.ch/re/"
 
 
 # check if config.json file exists
@@ -21,5 +20,5 @@ with open("config.json") as json_data_file:
 # open start page and get URL of AAI login page
 url_login_page = scraping.get_url_login(url_start_page)
 
-# log into AAI and fetch the module booking page
-html_module_booking = scraping.login(url_login_page, username, password)
+# log into AAI and fetch the grades page
+html_grades = scraping.login(url_login_page, username, password)
