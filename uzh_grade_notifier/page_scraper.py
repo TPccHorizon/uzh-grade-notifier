@@ -1,9 +1,12 @@
-import requests
+import json
+import os.path
 import re
+
+import requests
 from bs4 import BeautifulSoup
 
 
-def get_url_login(url_start):
+def get_login_url(url_start):
     """Follow redirect on start page to get URL of AAI login page"""
 
     # GET page
@@ -29,9 +32,20 @@ def get_url_login(url_start):
         raise Exception("Could not find redirect URL to AAI login page")
 
 
-def login(url_login, username, password):
+def get_grades_page(url_login, path_config):
     """Enter authentication information on AAI login page and follow redirects to get HTML of grades
     page"""
+
+    # check if config.json file exists
+    if not os.path.exists(path_config):
+        raise Exception("Configuration file not found - Please create a config.json file with the"
+                        "attributes 'username' and 'password' in the project directory.")
+
+    # import AAI login data from config.json file
+    with open(path_config) as json_config:
+        config = json.load(json_config)
+        username = config["username"]
+        password = config["password"]
 
     # start session (for storing cookies)
     with requests.Session() as session:
@@ -77,11 +91,9 @@ def login(url_login, username, password):
             "SAMLResponse": saml_response["value"]
         }
         headers_confirm = {
-            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 '
-                          '(KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 "
+                          "(KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36"}
 
         # POST to confirmation form URL to get grades page
-        page_grades = session.post(url_grades, data=payload_confirm,
-                                           headers=headers_confirm)
-        print(page_grades.text)
+        page_grades = session.post(url_grades, data=payload_confirm, headers=headers_confirm)
         return page_grades.content

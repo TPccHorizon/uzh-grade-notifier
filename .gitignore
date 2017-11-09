@@ -5,11 +5,14 @@ Thumbs.db
 # PyCharm (IDE)
 .idea
 
-# configuration
-config.json
-
 # Python
 __pycache__/
 *.pyc
 *.pyo
 *$py.class
+
+# configuration
+config.json
+
+# grades cache
+.grades-cache.json
