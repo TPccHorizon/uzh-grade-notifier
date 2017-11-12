@@ -8,9 +8,9 @@ from bs4 import BeautifulSoup
 class NewGrade:
     """Information about a new exam grade of a module"""
 
-    module_id: ""
-    module_name: ""
-    grade: -1
+    module_id= ""
+    module_name= ""
+    grade= -1
 
     def __init__(self, module_id, module_name, grade):
         self.module_id = module_id
