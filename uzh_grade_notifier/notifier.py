@@ -8,10 +8,13 @@ from sys import platform
 def display_alert(title, text, path_config):
     if platform == "darwin":
         # macOS: display alert using AppleScript
-        subprocess.Popen("""osascript -e 'display alert "{}" message "{}"'""".format(title, text))
+        subprocess.Popen("""osascript -e 'display alert "{}" "{}"'""".format(title, text))
     elif platform == "win32":
         # windows: display alert using cscript and a vbs script
         subprocess.Popen("""cscript "{}"/mb.vbs "{}: {}" """.format(os.path.dirname(__file__), title, text))
+    elif platform == "linux" or platform == "linux2":
+        # linux: display alert using notify-send()
+        subprocess.Popen("""notify-send {} {}""".format(title, text))
 
     # Check if pbToken was filled in and send notification to pushBullet token owner
     with open(path_config) as json_config:
