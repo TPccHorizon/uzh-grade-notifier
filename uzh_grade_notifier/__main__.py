@@ -20,4 +20,4 @@ new_grades = grade_checker.update_grades(html_grades, path_cache)
 
 # if new grades have been released, display notification
 if new_grades:
-    notifier.send_grade_notification(new_grades)
+    notifier.send_grade_notification(new_grades,path_config)
