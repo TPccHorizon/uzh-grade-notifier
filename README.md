@@ -34,7 +34,6 @@ If you also wish to receive notification to your PushBullet account, enter your 
 }
 ```
 
-
 ## Scheduled script execution
 
 Follow these steps to make your operating system execute the script periodically. In the examples, the script is executed every 15 minutes.
@@ -60,6 +59,15 @@ If you want to remove the task again:
 ```
 schtasks /delete /tn UZHGradeNotifier /f
 ```
+
+## Optional command line arguments
+
+To run script use:
+```
+/path/to/python3 path/to/script/uzh_grade_notifier/__main__.py [--config /path/to/config.json path/to/.grades-cache.json] [--headless]
+```
+The ```--config``` flag lets you set your own config.json path (config.json must already exist) and the path where your grades-cache should be saved.
+The ```--headless``` flag lets you turn desktop notifications off. Useful for servers.
 
 ## Contributing
 

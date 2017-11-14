@@ -6,19 +6,7 @@ from sys import platform
 import requests
 
 
-def display_alert(title, text, path_config):
-    if platform == "darwin":
-        # macOS: display alert using AppleScript
-        os.system("""osascript -e 'display alert "{}" message "{}"'""".format(title, text))
-    elif platform == "win32":
-        # windows: display alert using cscript and a vbs script
-        Popen("""cscript "{}"/mb.vbs "{}: {}" """.format(os.path.dirname(__file__), title, text))
-    elif platform == "linux" or platform == "linux2":
-        # linux: display alert using notify-send()
-        os.system("""notify-send "{}" "{}" """.format(title, text))
-    else:
-        raise EnvironmentError("Notifications for the platform '{}' are not supported."
-                               .format(platform))
+def display_alert(title, text, path_config, desktop_notifications_on):
 
     # Check if pbToken was filled in and send notification to pushBullet token owner
     with open(path_config) as json_config:
@@ -42,8 +30,23 @@ def display_alert(title, text, path_config):
             # Send post request to telegram server
             requests.post(url, data=json.dumps(payload), headers=headers)
 
+    # check if desktop notifications are on
+    if desktop_notifications_on:
+        if platform == "darwin":
+            # macOS: display alert using AppleScript
+            os.system("""osascript -e 'display alert "{}" message "{}"'""".format(title, text))
+        elif platform == "win32":
+            # windows: display alert using cscript and a vbs script
+            Popen("""cscript "{}"/win_msgbox.vbs "{}: {}" """.format(os.path.dirname(__file__), title, text))
+        elif platform == "linux" or platform == "linux2":
+            # linux: display alert using notify-send()
+            os.system("""notify-send "{}" "{}" """.format(title, text))
+        else:
+            raise EnvironmentError("Notifications for the platform '{}' are not supported."
+                                   .format(platform))
 
-def send_grade_notification(grades, path):
+
+def send_grade_notification(grades, path, desktop_notifications_on):
     if len(grades) > 1:
         alert_title = "New grades"
     else:
@@ -53,4 +56,4 @@ def send_grade_notification(grades, path):
     for grade in grades:
         alert_text += grade.module_name + ": " + grade.grade + "\n"
 
-    display_alert(alert_title, alert_text, path)
+    display_alert(alert_title, alert_text, path, desktop_notifications_on)
