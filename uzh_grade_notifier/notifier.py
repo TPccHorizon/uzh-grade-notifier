@@ -15,7 +15,7 @@ def display_alert(title, text, path_config):
         Popen("""cscript "{}"/mb.vbs "{}: {}" """.format(os.path.dirname(__file__), title, text))
     elif platform == "linux" or platform == "linux2":
         # linux: display alert using notify-send()
-        Popen("""notify-send "{}" "{}" """.format(title, text))
+        os.system("""notify-send "{}" "{}" """.format(title, text))
     else:
         raise EnvironmentError("Notifications for the platform '{}' are not supported."
                                .format(platform))
@@ -29,6 +29,17 @@ def display_alert(title, text, path_config):
             url = 'https://api.pushbullet.com/v2/pushes'
             payload = {'body': text, 'title': title, 'type': 'note'}
             # Send post request to pushbullet server
+            requests.post(url, data=json.dumps(payload), headers=headers)
+
+        # Check if tgBotToken and tgChatId was filled in and send notification to telegram chat
+        if "tgBotToken" in config and "tgChatId" in config:
+            tg_token = config["tgBotToken"]
+            tg_id = config["tgChatId"]
+            headers = {'Content-Type': 'application/json'}
+            url = 'https://api.telegram.org/bot' + tg_token + '/sendMessage'
+            message = '*{}*\n{}'.format(title, text)
+            payload = {'chat_id': tg_id, 'text': message, 'parse_mode': 'Markdown'}
+            # Send post request to telegram server
             requests.post(url, data=json.dumps(payload), headers=headers)
 
 

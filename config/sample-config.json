@@ -1,5 +1,7 @@
 {
 	"username": "",
 	"password": "",
-	"pbToken":""
+	"pbToken":"",
+	"tgBotToken": "",
+	"tgChatId": ""
 }

@@ -22,13 +22,15 @@ pipenv install
 
 To get the script working, open the `config` folder. Rename the [`sample-config.json`](config/sample-config.json) file to `config.json` and fill in your AAI login information (`username` and `password`).
 
-If you also wish to receive notification to your PushBullet account, enter your access token under `pbToken`.
+If you also wish to receive notification to your PushBullet account, enter your access token under `pbToken`. For Telegram, enter `tgBotToken` and `tgChatId`.
 
 ```json
 {
     "username": "your-uzh-shortname",
     "password": "your-uzh-password",
-    "pbToken": "optional-pushbullet-token"
+    "pbToken": "optional-pushbullet-token",
+    "tgBotToken": "optional-telegram-bot-token",
+    "tgChatId": "optional-telegram-chat-id"
 }
 ```
 
