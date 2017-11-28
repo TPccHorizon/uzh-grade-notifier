@@ -64,7 +64,7 @@ schtasks /delete /tn UZHGradeNotifier /f
 
 To run script use:
 ```
-/path/to/python3 path/to/script/uzh_grade_notifier/__main__.py [--config /path/to/config.json path/to/.grades-cache.json] [--headless]
+/path/to/python3 path/to/script/uzh_grade_notifier/__main__.py [--config /path/to/config.json path/to/cache] [--headless]
 ```
 The ```--config``` flag lets you set your own config.json path (config.json must already exist) and the path where your grades-cache should be saved.
 The ```--headless``` flag lets you turn desktop notifications off. Useful for servers.
