@@ -1,13 +1,18 @@
 import json
+import logging
 import os.path
 import re
 
 import requests
 from bs4 import BeautifulSoup
 
+logger = logging.getLogger()
+
 
 def get_login_url(url_start):
-    """Follow redirect on start page to get URL of AAI login page"""
+    """Open start page and extract URL to AAI login page"""
+
+    logger.info('Getting start page and extracting AAI login URL')
 
     # GET page
     page_start = requests.get(url_start)
@@ -27,7 +32,9 @@ def get_login_url(url_start):
         url = regex_url.search(scripts[1].string).group(1)
 
         # merge server base address and path
-        return url.replace("\" + server + \"", server_address)
+        url_login = url.replace("\" + server + \"", server_address)
+        logger.info('Extracted AAI login URL: ' + url_login)
+        return url_login
     else:
         raise Exception("Could not find redirect URL to AAI login page")
 
@@ -35,6 +42,8 @@ def get_login_url(url_start):
 def get_grades_page(url_login, path_config):
     """Enter authentication information on AAI login page and follow redirects to get HTML of grades
     page"""
+
+    logger.debug('Reading username and password from config.json file')
 
     # check if config.json file exists
     if not os.path.exists(path_config):
@@ -50,6 +59,8 @@ def get_grades_page(url_login, path_config):
     # start session (for storing cookies)
     with requests.Session() as session:
 
+        logger.info('Getting AAI login page and extracting form submit URL')
+
         # GET login page
         page_login = session.get(url_login)
         if page_login.status_code != 200:
@@ -61,7 +72,7 @@ def get_grades_page(url_login, path_config):
         if form_login:
             url_confirm = form_login["action"]
         else:
-            raise Exception("Could not find POST URL of login form")
+            raise Exception("Could not find submit URL of login form")
 
         # login page: set up POST parameters
         payload_login = {
@@ -71,11 +82,13 @@ def get_grades_page(url_login, path_config):
         }
 
         # POST to login form URL to get confirmation page
+        logger.debug('Sending POST request with login information to receive confirmation page')
         page_confirm = session.post("https://aai-idp.uzh.ch" + url_confirm, data=payload_login)
         if page_confirm.status_code != 200:
             raise Exception("POST on login form returned code " + str(page_confirm.status_code))
 
         # confirmation page: extract POST URL from confirmation form
+        logger.debug('Extracting token and form submit URL from confirmation page')
         soup_confirm = BeautifulSoup(page_confirm.content, "html.parser")
         form_confirm = soup_confirm.find("form", attrs={"method": "post"})
         if form_confirm:
@@ -95,5 +108,8 @@ def get_grades_page(url_login, path_config):
                           "(KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36"}
 
         # POST to confirmation form URL to get grades page
+        logger.debug('Sending POST request with token to receive grades page')
         page_grades = session.post(url_grades, data=payload_confirm, headers=headers_confirm)
+
+        logger.info('Received grades page')
         return page_grades.content

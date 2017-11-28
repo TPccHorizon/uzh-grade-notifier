@@ -1,16 +1,19 @@
 import json
+import logging
 import os.path
 from datetime import datetime
 
 from bs4 import BeautifulSoup
 
+logger = logging.getLogger()
+
 
 class NewGrade:
     """Information about a new exam grade of a module"""
 
-    module_id= ""
-    module_name= ""
-    grade= -1
+    module_id = ""
+    module_name = ""
+    grade = -1
 
     def __init__(self, module_id, module_name, grade):
         self.module_id = module_id
@@ -19,20 +22,22 @@ class NewGrade:
 
 
 def update_grades(html_grades, path_cache):
-    """Compares the grades on the given HTML page to the cached ones from the last script execution
-    and returns a list of modules with newly released grades"""
+    """Compare the grades on the given HTML page to the cached ones from the last script execution
+    and return a list of modules with newly released grades"""
 
     new_grades = []
     first_execution = False  # True if script is running for the first time (-> no notification)
 
     # if grades cache file does not exist: create it and remember not to send notification
     if not os.path.exists(path_cache):
+        logger.info("No grades-cache.json found, will not send notifications")
         first_execution = True
         # write empty JSON file to disk
         with open(path_cache, "a") as new_json_file:
             json.dump({}, new_json_file)
 
     # parse HTML of grades page, get all module table rows
+    logger.info("Parsing modules with grades from website and comparing them to the cache")
     soup_grades = BeautifulSoup(html_grades, "html.parser")
     table_rows = soup_grades.findAll("tr", attrs={"style": "font-size: 80%;"})
 
@@ -56,6 +61,7 @@ def update_grades(html_grades, path_cache):
 
                 # module is not in cache: new grade
                 if module_id not in grades_cache:
+                    logger.info("New grade found for module '" + module_name + "'")
                     # add information about new grade to new_grades list
                     new_grades.append(NewGrade(module_id, module_name, grade))
                     # update cache
@@ -68,6 +74,7 @@ def update_grades(html_grades, path_cache):
 
                     # if booking date on HTML page is more recent than cached one: new grade
                     if booking_date_html > booking_date_cache:
+                        logger.info("New grade found for module '" + module_name + "'")
                         # add information about new grade to new_grades list
                         new_grades.append(NewGrade(module_id, module_name, grade))
                         # update cache
